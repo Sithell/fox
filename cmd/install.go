@@ -75,7 +75,13 @@ func addImportToFile(s string, path string) string {
 		strings.Contains(s, "\n/* Fox mod manager end */") {
 		regionStart := strings.Index(s, "/* Fox mod manager start */\n") + 28
 		regionEnd := strings.Index(s, "\n/* Fox mod manager end */")
-		return s[:regionStart] + addImportToRegion(s[regionStart:regionEnd], path) + s[regionEnd:]
+		var region string
+		if regionStart > regionEnd {
+			region = ""
+		} else {
+			region = s[regionStart:regionEnd]
+		}
+		return s[:regionStart] + addImportToRegion(region, path) + s[regionEnd:]
 	}
 	return fmt.Sprintf("%s\n/* Fox mod manager start */\n@import \"%s\";\n/* Fox mod manager end */\n", s, path)
 }
