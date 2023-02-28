@@ -1,9 +1,9 @@
 package internal
 
-// Contains checks if a string is present in a slice
-func Contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
+// Contains checks if an element is present in a slice
+func Contains[T comparable](arr []T, elem T) bool {
+	for _, v := range arr {
+		if v == elem {
 			return true
 		}
 	}
