@@ -2,20 +2,19 @@ package internal
 
 import (
 	"errors"
+	"github.com/spf13/afero"
 	"gopkg.in/ini.v1"
-	"io/fs"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
-func PrepareFirefox() (string, error) {
-	profileDir, err := locateProfileDir()
+func PrepareFirefox(fs afero.Fs) (string, error) {
+	profileDir, err := locateProfileDir(fs)
 	if err != nil {
 		return "", err
 	}
 
-	err = initChrome(profileDir)
+	err = initChrome(fs, profileDir)
 	if err != nil {
 		return "", err
 	}
@@ -23,14 +22,15 @@ func PrepareFirefox() (string, error) {
 	return profileDir + "/chrome", nil
 }
 
-func locateProfileDir() (string, error) {
+func locateProfileDir(fs afero.Fs) (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
 	var configDir = homeDir + "/.mozilla/firefox"
-	configDir = "/home/sithell/dev/fox/tmp"
-	cfg, err := ini.Load(configDir + "/profiles.ini")
+
+	f, err := afero.ReadFile(fs, configDir+"/profiles.ini")
+	cfg, err := ini.Load(f)
 
 	profiles := cfg.Sections()
 	var profileName string
@@ -45,17 +45,17 @@ func locateProfileDir() (string, error) {
 	}
 
 	var profileDir = configDir + "/" + profileName
-	if _, err := os.Stat(profileDir); err != nil {
+	if _, err := fs.Stat(profileDir); err != nil {
 		return "", err
 	}
 	return profileDir, nil
 }
 
-func initChrome(profileDir string) error {
+func initChrome(fs afero.Fs, profileDir string) error {
 	chromeDir := profileDir + "/chrome"
 
-	if _, err := os.Stat(chromeDir); os.IsNotExist(err) {
-		if err := os.Mkdir(chromeDir, os.ModePerm); err != nil {
+	if _, err := fs.Stat(chromeDir); os.IsNotExist(err) {
+		if err := fs.Mkdir(chromeDir, os.ModePerm); err != nil {
 			return err
 		}
 	} else if err != nil {
@@ -71,12 +71,12 @@ const (
 	Content = "userContent.css"
 )
 
-func LocateUserFiles(modPath string) (userFilePaths map[UserFile]string) {
+func LocateUserFiles(fs afero.Fs, modPath string) (userFilePaths map[UserFile]string) {
 	userFilePaths = make(map[UserFile]string)
 	for _, userFile := range []UserFile{Chrome, Content} {
 		minimalDepth := 999999
 		var userFilePath string
-		err := filepath.Walk(modPath, func(path string, info fs.FileInfo, err error) error {
+		err := afero.Walk(fs, modPath, func(path string, info os.FileInfo, err error) error {
 			depth := len(strings.Split(path, "/"))
 			if strings.Contains(path, string(userFile)) && depth < minimalDepth {
 				minimalDepth = depth

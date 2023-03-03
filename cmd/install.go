@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Sithell/fox/internal"
 	"github.com/go-git/go-git/v5"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	u "net/url"
 	"os"
@@ -33,7 +34,9 @@ var installCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var url = args[0]
 
-		chromePath, err := internal.PrepareFirefox()
+		fs := afero.NewOsFs()
+
+		chromePath, err := internal.PrepareFirefox(fs)
 		if err != nil {
 			panic(err)
 		}
@@ -57,7 +60,7 @@ var installCmd = &cobra.Command{
 			}
 		}
 
-		userFiles := internal.LocateUserFiles(chromePath + "/" + repoName)
+		userFiles := internal.LocateUserFiles(fs, chromePath+"/"+repoName)
 		for userFileName, pathInRepo := range userFiles {
 			filename := chromePath + "/" + string(userFileName)
 			bytes, _ := os.ReadFile(filename)
