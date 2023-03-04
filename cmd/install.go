@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	u "net/url"
-	"os"
 	"regexp"
 )
 
@@ -43,15 +42,21 @@ func NewInstallCmd(fs afero.Fs) *cobra.Command {
 				panic(err)
 			}
 			repoName := re.FindAllStringSubmatch(url, -1)[0][1]
-			fmt.Printf("Installing %s to %s\n", repoName, chromePath)
+			_, err = fmt.Fprintf(cmd.OutOrStdout(), "Installing %s to %s\n", repoName, chromePath)
+			if err != nil {
+				panic(err)
+			}
 
 			_, err = git.PlainClone(chromePath+"/"+repoName, false, &git.CloneOptions{
 				URL:      url,
-				Progress: os.Stdout,
+				Progress: cmd.OutOrStdout(),
 			})
 			if err != nil {
 				if err.Error() == "repository already exists" {
-					fmt.Println(err)
+					_, err = fmt.Fprintln(cmd.OutOrStderr(), err)
+					if err != nil {
+						panic(err)
+					}
 				} else {
 					panic(err)
 				}
