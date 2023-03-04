@@ -27,7 +27,12 @@ func locateProfileDir(fs afero.Fs) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var configDir = homeDir + "/.mozilla/firefox"
+	var configDir string
+	if os.Getenv("ENV") == "dev" {
+		configDir = "tmp"
+	} else {
+		configDir = homeDir + "/.mozilla/firefox"
+	}
 
 	f, err := afero.ReadFile(fs, configDir+"/profiles.ini")
 	cfg, err := ini.Load(f)
