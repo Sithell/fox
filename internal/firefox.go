@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"github.com/spf13/afero"
 	"gopkg.in/ini.v1"
 	"os"
@@ -97,4 +98,31 @@ func LocateUserFiles(fs afero.Fs, modPath string) (userFilePaths map[UserFile]st
 		}
 	}
 	return userFilePaths
+}
+
+func AddImportToFile(s string, path string) string {
+	if strings.Contains(s, "/* Fox mod manager start */\n") &&
+		strings.Contains(s, "\n/* Fox mod manager end */") {
+		regionStart := strings.Index(s, "/* Fox mod manager start */\n") + 28
+		regionEnd := strings.Index(s, "\n/* Fox mod manager end */")
+		var region string
+		if regionStart > regionEnd {
+			region = ""
+		} else {
+			region = s[regionStart:regionEnd]
+		}
+		return s[:regionStart] + addImportToRegion(region, path) + s[regionEnd:]
+	}
+	return fmt.Sprintf("%s\n/* Fox mod manager start */\n@import \"%s\";\n/* Fox mod manager end */\n", s, path)
+}
+
+func addImportToRegion(region string, path string) string {
+	lines := strings.Split(region, "\n")
+	if !Contains(lines, fmt.Sprintf("@import \"%s\";", path)) {
+		lines = append(lines, fmt.Sprintf("@import \"%s\";", path))
+	}
+	if len(lines) == 0 {
+		return ""
+	}
+	return strings.Join(lines, "\n")
 }
