@@ -2,6 +2,7 @@ package internal
 
 import (
 	"github.com/spf13/afero"
+	"gopkg.in/yaml.v3"
 	"reflect"
 	"testing"
 )
@@ -62,5 +63,32 @@ func TestLocateUserFiles(t *testing.T) {
 		"userContent.css": "userContent.css",
 	}) {
 		t.Errorf("LocateUserFiles returned invalid result: %v", result)
+	}
+}
+
+func TestLoadFoxYml(t *testing.T) {
+	expected := FoxYml{[]FoxYmlMod{
+		{
+			"Mono-firefox-theme",
+			"https://github.com/witalihirsch/Mono-firefox-theme.git",
+		},
+	}}
+	content, _ := yaml.Marshal(expected)
+
+	fs := afero.NewMemMapFs()
+	file, err := fs.Create("fox.yml")
+	if err != nil {
+		panic(err)
+	}
+	if _, err = file.Write(content); err != nil {
+		panic(err)
+	}
+
+	result, err := LoadFoxYml(fs, "fox.yml")
+	if err != nil {
+		t.Errorf("LoadFoxYml returned error: %s", err)
+	}
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
 	}
 }

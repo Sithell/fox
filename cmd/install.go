@@ -7,6 +7,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 	u "net/url"
 	"regexp"
 )
@@ -71,6 +72,22 @@ func NewInstallCmd(fs afero.Fs) *cobra.Command {
 				if err != nil {
 					panic(err)
 				}
+			}
+
+			foxYml, err := internal.LoadFoxYml(fs, chromePath+"/fox.yml")
+			if err != nil {
+				panic(err)
+			}
+
+			mod := internal.FoxYmlMod{Name: repoName, Url: url}
+			if !internal.Contains(foxYml.Mods, mod) {
+				foxYml.Mods = append(foxYml.Mods, mod)
+			}
+
+			rawYaml, err := yaml.Marshal(foxYml)
+			err = afero.WriteFile(fs, chromePath+"/fox.yml", rawYaml, 0644)
+			if err != nil {
+				panic(err)
 			}
 		},
 	}

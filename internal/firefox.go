@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spf13/afero"
 	"gopkg.in/ini.v1"
+	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
 )
@@ -125,4 +126,33 @@ func addImportToRegion(region string, path string) string {
 		return ""
 	}
 	return strings.Join(lines, "\n")
+}
+
+type FoxYml struct {
+	Mods []FoxYmlMod `yaml:"mods"`
+}
+
+type FoxYmlMod struct {
+	Name string `yaml:"name"`
+	Url  string `yaml:"url"`
+}
+
+func LoadFoxYml(fs afero.Fs, path string) (FoxYml, error) {
+	ok, err := afero.Exists(fs, path)
+	if err != nil {
+		return FoxYml{}, err
+	}
+	if !ok {
+		return FoxYml{}, nil
+	}
+	var result FoxYml
+	bytes, err := afero.ReadFile(fs, path)
+	if err != nil {
+		return FoxYml{}, err
+	}
+	err = yaml.Unmarshal(bytes, &result)
+	if err != nil {
+		return FoxYml{}, err
+	}
+	return result, nil
 }
