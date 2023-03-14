@@ -14,6 +14,9 @@ fox install https://github.com/witalihirsch/Mono-firefox-theme.git
 # To remove a mod
 fox remove Mono-firefox-theme
 
+# To list installed mods
+fox list
+
 # To show help message
 fox help
 
