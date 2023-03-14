@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/Sithell/fox/internal"
 	"github.com/spf13/afero"
+	"gopkg.in/yaml.v3"
 	"io"
 	"os"
 	"testing"
@@ -66,5 +67,15 @@ Removed imports from userContent.css
 	}
 	if _, err := fs.Stat(chromeDir + "/Mono-firefox-theme"); !os.IsNotExist(err) {
 		t.Errorf("Mono-firefox-theme directory not removed: %s", err)
+	}
+
+	foxYml, err := afero.ReadFile(fs, chromeDir+"/fox.yml")
+	if err != nil {
+		t.Errorf("Failed to open fox.yml: %s", err)
+	}
+	expected := internal.FoxYml{Mods: []internal.FoxYmlMod{}}
+	content, _ := yaml.Marshal(expected)
+	if string(foxYml) != string(content) {
+		t.Errorf("Contents of fox.yml do not match: %s", string(foxYml))
 	}
 }

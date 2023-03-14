@@ -6,6 +6,7 @@ import (
 	"github.com/Sithell/fox/internal"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 	"strings"
 )
 
@@ -50,6 +51,24 @@ func NewRemoveCmd(fs afero.Fs) *cobra.Command {
 				if err != nil {
 					panic(err)
 				}
+			}
+
+			foxYml, err := internal.LoadFoxYml(fs, chromePath+"/fox.yml")
+			if err != nil {
+				panic(err)
+			}
+
+			for i, mod := range foxYml.Mods {
+				if mod.Name == repoName {
+					foxYml.Mods = internal.Remove(foxYml.Mods, i)
+					break
+				}
+			}
+
+			rawYaml, err := yaml.Marshal(foxYml)
+			err = afero.WriteFile(fs, chromePath+"/fox.yml", rawYaml, 0644)
+			if err != nil {
+				panic(err)
 			}
 		},
 	}
