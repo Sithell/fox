@@ -32,7 +32,11 @@ func NewRemoveCmd(fs afero.Fs) *cobra.Command {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("Deleted %s directory from %s\n", repoName, chromePath)
+
+			_, err = fmt.Fprintf(cmd.OutOrStdout(), "Deleted %s directory from %s\n", repoName, chromePath)
+			if err != nil {
+				panic(err)
+			}
 
 			for _, userFileName := range []internal.UserFile{internal.Chrome, internal.Content} {
 				filename := chromePath + "/" + string(userFileName)
@@ -42,7 +46,10 @@ func NewRemoveCmd(fs afero.Fs) *cobra.Command {
 				if err != nil {
 					panic(err)
 				}
-				fmt.Printf("Removed imports from %s\n", userFileName)
+				_, err := fmt.Fprintf(cmd.OutOrStdout(), "Removed imports from %s\n", userFileName)
+				if err != nil {
+					panic(err)
+				}
 			}
 		},
 	}
