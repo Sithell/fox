@@ -11,11 +11,14 @@ Fox allows you to manage Firefox UI modifications via CLI by editing `userChrome
 # To install a mod
 fox install https://github.com/witalihirsch/Mono-firefox-theme.git
 
-# To remove a mod
-fox remove Mono-firefox-theme
-
 # To list installed mods
 fox list
+
+# To update an installed mod
+fox update Mono-firefox-theme
+
+# To remove a mod
+fox remove Mono-firefox-theme
 
 # To show help message
 fox help
